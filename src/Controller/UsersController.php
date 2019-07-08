@@ -23,7 +23,6 @@ class UsersController extends AppController
     {
         parent::initialize();
         $this->Auth->allow(['logout', 'signup']);
-        $this->viewBuilder()->setLayout('admin');
         $this->user = TableRegistry::getTableLocator()->get('Users');
     }
 
