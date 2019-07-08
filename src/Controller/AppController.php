@@ -64,4 +64,9 @@ class AppController extends Controller
          */
         // $this->loadComponent('Security');
     }
+
+    public function beforeRender(Event $event)
+    {
+        $this->set('auth', $this->request->session()->read('Auth'));
+    }
 }

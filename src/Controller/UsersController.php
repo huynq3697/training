@@ -22,7 +22,8 @@ class UsersController extends AppController
     public function initialize()
     {
         parent::initialize();
-        $this->Auth->allow(['logout']);
+        $this->Auth->allow(['logout', 'signup']);
+        $this->viewBuilder()->setLayout('admin');
         $this->user = TableRegistry::getTableLocator()->get('Users');
     }
 
@@ -41,6 +42,15 @@ class UsersController extends AppController
      * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
     public function view($id = null)
+    {
+        $user = $this->Users->get($id, [
+            'contain' => ['Products']
+        ]);
+
+        $this->set('user', $user);
+    }
+
+    public function profile($id = null)
     {
         $user = $this->Users->get($id, [
             'contain' => ['Products']
@@ -115,23 +125,46 @@ class UsersController extends AppController
 
     public function login()
     {
-        if ($this->request->is('post')) {
-            $request = $this->getRequest()->getData();
-            $user = $this->user->find()                 
-                                ->where(['email' => $request['email']])
-                                ->where(['password' => $request['password']])
-                                ->first();
-            if ($user) {
-                $this->Auth->setUser($user);
-                return $this->redirect($this->Auth->redirectUrl());
+        if($this->Auth->user('id')){
+            $this->Flash->error(_('You are already logged in !'));
+            return $this->redirect(['action' => 'index']);
+        }else {
+            if ($this->request->is('post')) {
+
+                $request = $this->getRequest()->getData();
+                $user = $this->user->find()                 
+                ->where(['email' => $request['email']])
+                ->where(['password' => $request['password']])
+                ->first();
+                if ($user) {
+                    $this->Auth->setUser($user);
+                    $this->Flash->success(__('Login successfull !'));
+                    return $this->redirect($this->Auth->redirectUrl());
+                }
+                $this->Flash->error('Your email or password is incorrect.');
             }
-            $this->Flash->error('Your email or password is incorrect.');
         }
+        
     }
 
     public function logout()
     {
         $this->Flash->success('You are now logged out.');
         return $this->redirect($this->Auth->logout());
+    }
+
+    public function signup()
+    {
+        $user = $this->Users->newEntity();
+        if ($this->request->is('post')) {
+            $user = $this->Users->patchEntity($user, $this->request->getData());
+            if ($this->Users->save($user)) {
+                $this->Flash->success(__('The user has been saved.'));
+
+                return $this->redirect(['action' => 'index']);
+            }
+            $this->Flash->error(__('The user could not be saved. Please, try again.'));
+        }
+        $this->set(compact('user'));
     }
 }

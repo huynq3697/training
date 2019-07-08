@@ -35,7 +35,6 @@ class ProductsTable extends Table
         parent::initialize($config);
 
         $this->setTable('products');
-        $this->setDisplayField('name');
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
@@ -60,26 +59,17 @@ class ProductsTable extends Table
 
         $validator
             ->scalar('name')
-            ->requirePresence('name','create',"name k ton tai")
-            ->maxLength('name', 10)
-            ->allowEmptyString('name',false,"Can nhap truong nay");
-
-        $validator
+            ->requirePresence('name','create',"Field is not isset")
+            ->requirePresence('price','create',"Field is not isset")
+            ->requirePresence('quantity','create',"Field is not isset")
+            ->requirePresence('body','create',"Field is not isset")
+            ->allowEmptyString('name', false, "Name cannot be empty")
             ->integer('price')
-            ->allowEmptyString('price');
-
-        $validator
+            ->allowEmptyString('price', false, "Price cannot be empty")
             ->integer('quantity')
-            ->allowEmptyString('quantity');
-
-        $validator
-            ->scalar('image')
-            ->maxLength('image', 255)
-            ->allowEmptyFile('image');
-
-        $validator
+            ->allowEmptyString('quantity', false, "Quantity cannot be empty")
             ->scalar('body')
-            ->allowEmptyString('body');
+            ->allowEmptyString('body', false, "Body cannot be empty");
 
         return $validator;
     }

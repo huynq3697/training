@@ -17,7 +17,7 @@ class ProductsController extends AppController
     public function initialize()
     {
         parent::initialize();  
-        $this->Products = TableRegistry::getTableLocator()->get('Products');     
+        $this->Products = TableRegistry::getTableLocator()->get('Products');   
     }
 
     public function index()
@@ -41,16 +41,23 @@ class ProductsController extends AppController
 
             $request = $this->request->getData();
             $validation = $this->Products->newEntity($request);
+            $product   =   $this->Products->patchEntity($product, $request);
             if($validation->getErrors()){
-                
-            } 
-            $request['user_id'] = $this->Auth->user('id');
-            $product = $this->Products->patchEntity($product, $request);
-            if ($this->Products->save($product)) {
-                $this->Flash->success(__('The product has been saved.'));
+                foreach ($validation->getErrors() as $errors) {
+                    foreach ($errors as $error) {
+                        $this->Flash->success($error);
+                    }
+                }
+            }else{
+                $request['user_id'] = $this->Auth->user('id');
+                $product = $this->Products->patchEntity($product, $request);
+                if ($this->Products->save($product)) {
+                    $this->Flash->success(__('The product has been saved.'));
 
-                return $this->redirect(['action' => 'index']);
+                    return $this->redirect(['action' => 'index']);
+                }
             }
+            
             $this->Flash->error(__('The product could not be saved. Please, try again.'));
         }
         $this->set(compact('product'));
@@ -83,15 +90,4 @@ class ProductsController extends AppController
 
         return $this->redirect(['action' => 'index']);
     }
-
-    // public function validationDefault(Validator $validator)
-    // {
-    //     $validator
-    //         ->notEmpty('name',  __('You need to provide a name'))
-    //         ->notEmpty('price',  __('You need to provide a price'))
-    //         ->notEmpty('quantity',  __('You need to provide a quantity'))
-    //         ->notEmpty('body',  __('You need to provide a body'));
-
-    //     return $validator;
-    // }
 }
